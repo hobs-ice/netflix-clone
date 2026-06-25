@@ -59,31 +59,29 @@ if (showSubscription) return <Subscription session={session} onBack={() => setSh
     <div style={{ background: '#141414', minHeight: '100vh', color: 'white' }}>
       
       {/* NAVBAR */}
-      <nav style={{ position: 'fixed', top: 0, width: '100%', padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(0,0,0,0.9), transparent)', zIndex: 100, boxSizing: 'border-box' }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: '#E50914', letterSpacing: -1 }}>SWAZ</div>
-        <input 
-  value={search} 
-  onChange={e => setSearch(e.target.value)}
-  placeholder="🔍 Rechercher..."
-  style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 4, padding: '8px 16px', color: 'white', fontSize: 14, outline: 'none', width: 250 }}
-/>
-{!profile?.is_premium && (
-  <button onClick={() => setShowSubscription(true)} style={{ background: '#E50914', border: 'none', borderRadius: 4, padding: '6px 14px', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-    💎 S'abonner
-  </button>
-)}
+      <nav style={{ position: 'fixed', top: 0, width: '100%', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.95)', zIndex: 100, boxSizing: 'border-box', flexWrap: 'wrap', gap: 8 }}>
+  <div style={{ fontSize: 24, fontWeight: 900, color: '#E50914', letterSpacing: -1 }}>SWAZ</div>
+  <input 
+    value={search} 
+    onChange={e => setSearch(e.target.value)}
+    placeholder="🔍 Rechercher..."
+    style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 4, padding: '6px 12px', color: 'white', fontSize: 13, outline: 'none', flex: 1, minWidth: 120, maxWidth: 250 }}
+  />
+  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+    {!profile?.is_premium && (
+      <button onClick={() => setShowSubscription(true)} style={{ background: '#E50914', border: 'none', borderRadius: 4, padding: '6px 12px', color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+        💎
+      </button>
+    )}
+    <button onClick={() => setShowAdmin(true)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 4, padding: '6px 10px', color: 'white', cursor: 'pointer', fontSize: 12 }}>
+      ⚙️
+    </button>
+    <button onClick={onLogout} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 4, padding: '6px 10px', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: 12 }}>
+      ⏏️
+    </button>
+  </div>
+</nav>
 
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{session?.user?.email}</span>
-          <button onClick={() => setShowAdmin(true)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 4, padding: '6px 14px', color: 'white', cursor: 'pointer', fontSize: 13 }}>
-  ⚙️ Admin
-</button>
-
-          <button onClick={onLogout} style={{ background: '#E50914', border: 'none', borderRadius: 4, padding: '6px 14px', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-            Déconnexion
-          </button>
-        </div>
-      </nav>
       {currentFilm && (
   <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'black', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px' }}>
@@ -101,10 +99,11 @@ if (showSubscription) return <Subscription session={session} onBack={() => setSh
 
 
       {/* HERO */}
-      <div style={{ height: '80vh', 
+       <div style={{ height: '80vh', 
   background: films[0]?.thumbnail_url 
     ? `linear-gradient(to right, rgba(0,0,0,0.9) 40%, transparent), linear-gradient(to top, #141414 5%, transparent), url(${films[0].thumbnail_url}) center/cover no-repeat`
-    : 'linear-gradient(to right, rgba(0,0,0,0.9) 40%, transparent), linear-gradient(to top, #141414 5%, transparent)', display: 'flex', alignItems: 'center', padding: '0 40px', paddingTop: 80 }}>
+    : 'linear-gradient(to right, rgba(0,0,0,0.9) 40%, transparent), linear-gradient(to top, #141414 5%, transparent)', display: 'flex', alignItems: 'center', padding: '0 16px', paddingTop: 80
+ }}>
         {films[0] ? (
           <div>
             <div style={{ fontSize: 48, fontWeight: 900, marginBottom: 16, maxWidth: 600 }}>{films[0].titre}</div>
