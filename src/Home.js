@@ -4,9 +4,11 @@ import Admin from './Admin';
 import SerieDetail from './SerieDetail';
 import Subscription from './Subscription';
 
-function FilmCard({ film, onClick }) {
+function FilmCard({ film, onClick, isFavori, onFavori }) {
+
   return (
-    <div onClick={onClick} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', aspectRatio: '2/3', background: '#1a1a1a', cursor: 'pointer', transition: 'transform .25s, box-shadow .25s' }}
+    <div className="film-card" onClick={onClick} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden',
+ aspectRatio: '2/3', background: '#1a1a1a', cursor: 'pointer', transition: 'transform .25s, box-shadow .25s' }}
       onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.zIndex = 2; e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,0,0,.7)'; }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = 1; e.currentTarget.style.boxShadow = 'none'; }}>
       {film.thumbnail_url ? (
@@ -17,16 +19,26 @@ function FilmCard({ film, onClick }) {
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', textAlign: 'center', padding: '0 8px' }}>{film.titre}</span>
         </div>
       )}
-      {/* Overlay */}
-      <div className="card-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,8,8,.9) 0%, transparent 55%)', opacity: 0, transition: 'opacity .25s', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '.8rem' }}>
+            {/* Overlay */}
+      <div className="card-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,8,8,.9) 0%, transparent 55%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '.8rem' }}>
+
         <div style={{ fontWeight: 600, fontSize: '.85rem', marginBottom: '.3rem' }}>{film.titre}</div>
         <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
           {film.genre && <span style={{ fontSize: '.65rem', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', background: 'rgba(229,9,20,.8)', color: '#fff', padding: '.15rem .4rem', borderRadius: 2 }}>{film.genre}</span>}
+        </div>
+        <div style={{ display: 'flex', gap: '.5rem', marginTop: '.6rem' }}>
+          <div onClick={e => { e.stopPropagation(); onClick(); }} style={{ width: 32, height: 32, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,.5)', background: 'rgba(255,255,255,.9)', color: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '.75rem' }}>▶</div>
+          {onFavori && (
+            <div onClick={e => { e.stopPropagation(); onFavori(); }} style={{ width: 32, height: 32, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,.5)', background: 'rgba(0,0,0,.4)', color: isFavori ? '#e50914' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '.75rem' }}>
+              {isFavori ? '♥' : '♡'}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
 
 export default function Home({ session, onLogout, profile }) {
   const [films, setFilms] = useState([]);
@@ -37,9 +49,27 @@ export default function Home({ session, onLogout, profile }) {
   const [showSubscription, setShowSubscription] = useState(false);
   const [search, setSearch] = useState('');
   const [activeGenre, setActiveGenre] = useState('Tout');
+  const [favoris, setFavoris] = useState([]);
+
+const toggleFavori = async (film, isSerie = false) => {
+  const existing = favoris.find(f => isSerie ? f.serie_id === film.id : f.film_id === film.id);
+  if (existing) {
+    await supabase.from('favoris').delete().eq('id', existing.id);
+    setFavoris(favoris.filter(f => f.id !== existing.id));
+  } else {
+    const { data } = await supabase.from('favoris').insert({
+      user_id: session.user.id,
+      ...(isSerie ? { serie_id: film.id } : { film_id: film.id }),
+    }).select().single();
+    setFavoris([...favoris, data]);
+  }
+};
 
   const loadFilms = async () => {
     const { data: filmsData } = await supabase.from('films').select('*').order('created_at', { ascending: false });
+    const { data: favorisData } = await supabase.from('favoris').select('*').eq('user_id', session.user.id);
+setFavoris(favorisData || []);
+
     const { data: seriesData } = await supabase.from('series').select('*').order('created_at', { ascending: false });
     setFilms(filmsData || []);
     setSeries(seriesData || []);
@@ -143,7 +173,12 @@ export default function Home({ session, onLogout, profile }) {
             <span style={{ flex: 1, height: 1, background: '#2a2a2a' }} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
-            {filteredFilms.map(film => <FilmCard key={film.id} film={film} onClick={() => setCurrentFilm(film)} />)}
+            {filteredFilms.map(film => (
+  <FilmCard key={film.id} film={film} onClick={() => setCurrentFilm(film)}
+    isFavori={favoris.some(f => f.film_id === film.id)}
+    onFavori={() => toggleFavori(film, false)} />
+))}
+
           </div>
         </section>
       )}
@@ -156,10 +191,34 @@ export default function Home({ session, onLogout, profile }) {
             <span style={{ flex: 1, height: 1, background: '#2a2a2a' }} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
-            {filteredSeries.map(serie => <FilmCard key={serie.id} film={serie} onClick={() => setCurrentSerie(serie)} />)}
+            {filteredSeries.map(serie => (
+  <FilmCard key={serie.id} film={serie} onClick={() => setCurrentSerie(serie)}
+    isFavori={favoris.some(f => f.serie_id === serie.id)}
+    onFavori={() => toggleFavori(serie, true)} />
+))}
+
           </div>
         </section>
       )}
+
+      {favoris.length > 0 && (
+  <section style={{ padding: '1rem 4vw 2rem' }}>
+    <div style={{ fontFamily: 'Bebas Neue, serif', fontSize: '1.6rem', letterSpacing: '.06em', marginBottom: '1.4rem', display: 'flex', alignItems: 'center', gap: '.8rem' }}>
+      ♥ Ma liste
+      <span style={{ flex: 1, height: 1, background: '#2a2a2a' }} />
+    </div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
+      {favoris.map(fav => {
+        const film = fav.film_id ? films.find(f => f.id === fav.film_id) : series.find(s => s.id === fav.serie_id);
+        if (!film) return null;
+        return <FilmCard key={fav.id} film={film} onClick={() => fav.film_id ? setCurrentFilm(film) : setCurrentSerie(film)}
+          isFavori={true}
+          onFavori={() => toggleFavori(film, !!fav.serie_id)} />;
+      })}
+    </div>
+  </section>
+)}
+
 
       {/* BANNER CTA */}
       {!profile?.is_premium && (
@@ -183,9 +242,11 @@ export default function Home({ session, onLogout, profile }) {
       </footer>
 
       <style>{`
-        .card-overlay { opacity: 0 !important; }
-        div:hover > .card-overlay { opacity: 1 !important; }
-      `}</style>
+  .card-overlay { opacity: 0; transition: opacity .25s; }
+  .film-card:hover .card-overlay { opacity: 1; }
+`}</style>
+
+
     </div>
   );
 }
