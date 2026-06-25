@@ -307,7 +307,7 @@ setFavoris(favorisData || []);
       {!profile?.is_premium && (
         <div style={{ margin: '2rem 4vw', borderRadius: 6, background: 'linear-gradient(135deg, #9b0a10, #3a0a0e)', border: '1px solid #9b0a10', padding: '2.5rem 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap' }}>
           <div>
-            <div style={{ fontFamily: 'Bebas Neue, serif', fontSize: '2rem', letterSpacing: '.04em', marginBottom: '.4rem' }}>Accès illimité dès 9,99€/mois</div>
+            <div style={{ fontFamily: 'Bebas Neue, serif', fontSize: '2rem', letterSpacing: '.04em', marginBottom: '.4rem' }}>Accès illimité dès 7,99€/mois</div>
             <p style={{ color: '#ccc', fontSize: '.9rem' }}>Annulez à tout moment. Aucun engagement. Streaming HD inclus.</p>
           </div>
           <button onClick={() => setShowSubscription(true)} style={{ background: '#e50914', color: '#fff', border: 'none', padding: '.85rem 2.2rem', borderRadius: 3, fontSize: '1rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
