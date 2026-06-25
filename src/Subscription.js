@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from './supabase';
+
 
 const PRICE_ID = 'price_1TmDLmAkCh9INMBwggM5w85W';
 const SUPABASE_URL = 'https://boscpbdfstgbeyzstrmk.supabase.co';

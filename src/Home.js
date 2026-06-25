@@ -89,11 +89,13 @@ if (showSubscription) return <Subscription session={session} onBack={() => setSh
       <button onClick={() => setCurrentFilm(null)} style={{ background: 'none', border: 'none', color: 'white', fontSize: 28, cursor: 'pointer' }}>✕</button>
     </div>
     <iframe
+      title={currentFilm.titre}
       src={currentFilm.video_url}
       style={{ flex: 1, border: 'none', width: '100%' }}
       allowFullScreen
       allow="autoplay"
     />
+
   </div>
 )}
 
