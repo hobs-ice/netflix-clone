@@ -50,6 +50,21 @@ export default function Home({ session, onLogout, profile }) {
   const [search, setSearch] = useState('');
   const [activeGenre, setActiveGenre] = useState('Tout');
   const [favoris, setFavoris] = useState([]);
+  const [historique, setHistorique] = useState([]);
+const saveHistorique = async (filmId) => {
+  const existing = historique.find(h => h.film_id === filmId);
+  if (existing) {
+    await supabase.from('historique').update({ vu_le: new Date().toISOString() }).eq('id', existing.id);
+  } else {
+    await supabase.from('historique').insert({
+      user_id: session.user.id,
+      film_id: filmId,
+      progression: 0,
+    });
+  }
+  loadFilms();
+};
+
 
 const toggleFavori = async (film, isSerie = false) => {
   const existing = favoris.find(f => isSerie ? f.serie_id === film.id : f.film_id === film.id);
@@ -68,6 +83,9 @@ const toggleFavori = async (film, isSerie = false) => {
   const loadFilms = async () => {
     const { data: filmsData } = await supabase.from('films').select('*').order('created_at', { ascending: false });
     const { data: favorisData } = await supabase.from('favoris').select('*').eq('user_id', session.user.id);
+    const { data: historiqueData } = await supabase.from('historique').select('*, films(*)').eq('user_id', session.user.id).order('vu_le', { ascending: false }).limit(10);
+setHistorique(historiqueData || []);
+
 setFavoris(favorisData || []);
 
     const { data: seriesData } = await supabase.from('series').select('*').order('created_at', { ascending: false });
@@ -174,7 +192,10 @@ setFavoris(favorisData || []);
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
             {filteredFilms.map(film => (
-  <FilmCard key={film.id} film={film} onClick={() => setCurrentFilm(film)}
+
+<FilmCard key={film.id} film={film} onClick={() =>  { setCurrentFilm(film); saveHistorique(film.id); }
+}
+
     isFavori={favoris.some(f => f.film_id === film.id)}
     onFavori={() => toggleFavori(film, false)} />
 ))}
@@ -200,6 +221,24 @@ setFavoris(favorisData || []);
           </div>
         </section>
       )}
+{historique.length > 0 && (
+  <section style={{ padding: '1rem 4vw 2rem' }}>
+    <div style={{ fontFamily: 'Bebas Neue, serif', fontSize: '1.6rem', letterSpacing: '.06em', marginBottom: '1.4rem', display: 'flex', alignItems: 'center', gap: '.8rem' }}>
+      🕐 Continuer à regarder
+      <span style={{ flex: 1, height: 1, background: '#2a2a2a' }} />
+    </div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
+      {historique.map(h => {
+        const film = h.films;
+        if (!film) return null;
+        return <FilmCard key={h.id} film={film} onClick={() => { setCurrentFilm(film); saveHistorique(film.id); }}
+          isFavori={favoris.some(f => f.film_id === film.id)}
+          onFavori={() => toggleFavori(film, false)} />;
+      })}
+    </div>
+  </section>
+)}
+
 
       {favoris.length > 0 && (
   <section style={{ padding: '1rem 4vw 2rem' }}>
