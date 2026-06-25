@@ -18,7 +18,10 @@ export default function Admin({ onBack, films = [], onRefresh }) {
 const [serieId, setSerieId] = useState('');
 const [saison, setSaison] = useState('1');
 const [numero, setNumero] = useState('1');
-const [series] = useState([]);
+// eslint-disable-next-line no-unused-vars
+const [series, setSeries] = useState([]);
+
+
 
 
 useEffect(() => {
