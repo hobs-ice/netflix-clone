@@ -19,7 +19,6 @@ export default function Auth() {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) setMessage(error.message);
         else setMessage('✅ Compte créé ! Vérifiez votre email pour confirmer votre inscription.');
-
       }
     } catch (e) {
       setMessage('Erreur de connexion');
@@ -28,43 +27,71 @@ export default function Auth() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#141414', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ width: '100%', maxWidth: 400 }}>
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ fontSize: 48, fontWeight: 900, color: '#E50914', letterSpacing: -2, marginBottom: 8 }}>SWAZ</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>Votre plateforme de streaming</div>
+    <div style={{ minHeight: '100vh', background: '#080808', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+      
+      {/* Background */}
+      <div style={{ position: 'fixed', inset: 0, background: 'url(https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1600&q=80) center/cover no-repeat', opacity: 0.15 }} />
+      
+      {/* Navbar */}
+      <nav style={{ position: 'relative', zIndex: 10, padding: '24px 4vw' }}>
+        <div style={{ fontFamily: 'Bebas Neue, serif', fontSize: '2rem', letterSpacing: '.04em', color: '#e50914' }}>
+          CINE<span style={{ color: '#f0f0f0' }}>VAULT</span>
         </div>
+      </nav>
 
-        <div style={{ background: 'rgba(0,0,0,0.75)', borderRadius: 4, padding: 40 }}>
-          <div style={{ fontSize: 24, fontWeight: 700, color: 'white', marginBottom: 24 }}>
-            {isLogin ? 'Se connecter' : 'S\'inscrire'}
+      {/* Formulaire */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, position: 'relative', zIndex: 10 }}>
+        <div style={{ background: 'rgba(0,0,0,0.82)', border: '1px solid #2a2a2a', borderRadius: 8, padding: '2.5rem', width: '100%', maxWidth: 420 }}>
+          
+          {/* Tabs */}
+          <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a', marginBottom: '1.5rem' }}>
+            {['login', 'signup'].map(tab => (
+              <button key={tab} onClick={() => setIsLogin(tab === 'login')}
+                style={{ background: 'none', border: 'none', color: (isLogin ? tab === 'login' : tab === 'signup') ? '#f0f0f0' : '#888', padding: '.6rem 1.2rem', fontSize: '.9rem', fontWeight: 600, cursor: 'pointer', borderBottom: `2px solid ${(isLogin ? tab === 'login' : tab === 'signup') ? '#e50914' : 'transparent'}`, marginBottom: -1, transition: 'all .2s' }}>
+                {tab === 'login' ? 'Connexion' : 'Inscription'}
+              </button>
+            ))}
           </div>
 
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="Email"
-            style={{ width: '100%', background: '#333', border: '1px solid #444', borderRadius: 4, padding: '14px 16px', color: 'white', fontSize: 16, outline: 'none', marginBottom: 12, boxSizing: 'border-box' }} />
+          <div style={{ fontSize: '1.8rem', fontFamily: 'Bebas Neue, serif', letterSpacing: '.04em', marginBottom: '1.5rem' }}>
+            {isLogin ? 'Connexion' : 'Créer un compte'}
+          </div>
 
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-            placeholder="Mot de passe"
-            onKeyDown={e => e.key === 'Enter' && handleAuth()}
-            style={{ width: '100%', background: '#333', border: '1px solid #444', borderRadius: 4, padding: '14px 16px', color: 'white', fontSize: 16, outline: 'none', marginBottom: 16, boxSizing: 'border-box' }} />
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 500, color: '#888', marginBottom: '.4rem', textTransform: 'uppercase', letterSpacing: '.05em' }}>Email</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="votre@email.com"
+              style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, color: '#f0f0f0', padding: '.7rem 1rem', fontSize: '.9rem', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+              onFocus={e => e.target.style.borderColor = '#e50914'}
+              onBlur={e => e.target.style.borderColor = '#2a2a2a'} />
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 500, color: '#888', marginBottom: '.4rem', textTransform: 'uppercase', letterSpacing: '.05em' }}>Mot de passe</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+              onKeyDown={e => e.key === 'Enter' && handleAuth()}
+              style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, color: '#f0f0f0', padding: '.7rem 1rem', fontSize: '.9rem', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+              onFocus={e => e.target.style.borderColor = '#e50914'}
+              onBlur={e => e.target.style.borderColor = '#2a2a2a'} />
+          </div>
 
           {message && (
-            <div style={{ background: 'rgba(229,9,20,0.2)', border: '1px solid #E50914', borderRadius: 4, padding: '10px 14px', fontSize: 13, color: '#E50914', marginBottom: 16 }}>
+            <div style={{ background: message.includes('✅') ? 'rgba(39,174,96,0.15)' : 'rgba(229,9,20,0.15)', border: `1px solid ${message.includes('✅') ? '#27ae60' : '#e50914'}`, borderRadius: 3, padding: '10px 14px', fontSize: 13, color: message.includes('✅') ? '#27ae60' : '#e50914', marginBottom: 16 }}>
               {message}
             </div>
           )}
 
           <button onClick={handleAuth} disabled={loading}
-            style={{ width: '100%', padding: '14px', borderRadius: 4, border: 'none', background: '#E50914', color: 'white', fontWeight: 700, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginBottom: 16 }}>
-            {loading ? '⏳...' : isLogin ? 'Se connecter' : 'S\'inscrire'}
-          </button>
-
-          <button onClick={() => setIsLogin(!isLogin)}
-            style={{ width: '100%', background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: 14 }}>
-            {isLogin ? 'Nouveau sur Swaz ? Inscrivez-vous' : 'Déjà un compte ? Connectez-vous'}
+            style={{ width: '100%', background: '#e50914', color: '#fff', border: 'none', padding: '.85rem', borderRadius: 3, fontSize: '1rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, transition: 'background .2s' }}>
+            {loading ? '⏳...' : isLogin ? 'Se connecter' : 'Créer mon compte'}
           </button>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '24px', color: '#888', fontSize: '.8rem' }}>
+        © 2026 CineVault. Tous droits réservés.
       </div>
     </div>
   );
