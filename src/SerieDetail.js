@@ -16,10 +16,10 @@ export default function SerieDetail({ serie, onBack }) {
   setEpisodes(data || []);
 };
 
-// eslint-disable-next-line react-hooks/exhaustive-deps
 useEffect(() => {
   loadEpisodes();
-}, []);
+}, []); // eslint-disable-line
+
 
 
   const saisons = [...new Set(episodes.map(e => e.saison))];
