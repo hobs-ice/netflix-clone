@@ -18,7 +18,8 @@ export default function Auth() {
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) setMessage(error.message);
-        else setMessage('✅ Compte créé !');
+        else setMessage('✅ Compte créé ! Vérifiez votre email pour confirmer votre inscription.');
+
       }
     } catch (e) {
       setMessage('Erreur de connexion');
