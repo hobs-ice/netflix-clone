@@ -56,6 +56,31 @@ const loadSeries = async () => {
   if (error) setMessage('❌ Erreur: ' + error.message);
   else {
     setMessage('✅ Enregistré !');
+    // Notifier tous les utilisateurs
+if (mode === 'film') {
+  const { data: users } = await supabase.from('profiles').select('id');
+  if (users) {
+    await supabase.from('notifications').insert(
+      users.map(u => ({
+        user_id: u.id,
+        message: `🎬 Nouveau film disponible : ${titre}`,
+        type: 'film',
+      }))
+    );
+  }
+} else if (mode === 'serie') {
+  const { data: users } = await supabase.from('profiles').select('id');
+  if (users) {
+    await supabase.from('notifications').insert(
+      users.map(u => ({
+        user_id: u.id,
+        message: `📺 Nouvelle série disponible : ${titre}`,
+        type: 'serie',
+      }))
+    );
+  }
+}
+
     setTitre(''); setDescription(''); setGenre(''); setAnnee(''); setDuree(''); setVideoUrl(''); setThumbnailUrl('');
     setSerieId(''); setSaison('1'); setNumero('1');
     onRefresh();

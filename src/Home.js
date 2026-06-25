@@ -51,6 +51,9 @@ export default function Home({ session, onLogout, profile }) {
   const [activeGenre, setActiveGenre] = useState('Tout');
   const [favoris, setFavoris] = useState([]);
   const [historique, setHistorique] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+const [showNotifications, setShowNotifications] = useState(false);
+
 const saveHistorique = async (filmId) => {
   const existing = historique.find(h => h.film_id === filmId);
   if (existing) {
@@ -84,6 +87,9 @@ const toggleFavori = async (film, isSerie = false) => {
     const { data: filmsData } = await supabase.from('films').select('*').order('created_at', { ascending: false });
     const { data: favorisData } = await supabase.from('favoris').select('*').eq('user_id', session.user.id);
     const { data: historiqueData } = await supabase.from('historique').select('*, films(*)').eq('user_id', session.user.id).order('vu_le', { ascending: false }).limit(10);
+    const { data: notifData } = await supabase.from('notifications').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false }).limit(10);
+setNotifications(notifData || []);
+
 setHistorique(historiqueData || []);
 
 setFavoris(favorisData || []);
@@ -140,6 +146,43 @@ setFavoris(favorisData || []);
           {!profile?.is_premium && (
             <button onClick={() => setShowSubscription(true)} style={{ background: '#e50914', border: 'none', borderRadius: 3, padding: '6px 14px', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>💎 S'abonner</button>
           )}
+          <div style={{ position: 'relative' }}>
+  <button onClick={() => setShowNotifications(!showNotifications)} style={{ background: 'none', border: '1px solid rgba(255,255,255,.3)', borderRadius: 3, padding: '6px 10px', color: 'white', cursor: 'pointer', fontSize: 13 }}>
+    🔔
+    {notifications.filter(n => !n.lu).length > 0 && (
+      <span style={{ position: 'absolute', top: -4, right: -4, background: '#e50914', color: 'white', borderRadius: '50%', width: 16, height: 16, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+        {notifications.filter(n => !n.lu).length}
+      </span>
+    )}
+  </button>
+  
+  {showNotifications && (
+    <div style={{ position: 'absolute', right: 0, top: 40, width: 300, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, zIndex: 200, overflow: 'hidden' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #2a2a2a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontWeight: 700, fontSize: 14 }}>🔔 Notifications</div>
+        {notifications.some(n => !n.lu) && (
+          <button onClick={async () => {
+            await supabase.from('notifications').update({ lu: true }).eq('user_id', session.user.id);
+            loadFilms();
+          }} style={{ background: 'none', border: 'none', color: '#e50914', cursor: 'pointer', fontSize: 12 }}>
+            Tout lire
+          </button>
+        )}
+      </div>
+      {notifications.length === 0 ? (
+        <div style={{ padding: 20, textAlign: 'center', color: '#888', fontSize: 13 }}>Aucune notification</div>
+      ) : (
+        notifications.map(n => (
+          <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid #2a2a2a', background: n.lu ? 'transparent' : 'rgba(229,9,20,0.05)' }}>
+            <div style={{ fontSize: 13, color: n.lu ? '#888' : '#f0f0f0' }}>{n.message}</div>
+            <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>{new Date(n.created_at).toLocaleDateString('fr-FR')}</div>
+          </div>
+        ))
+      )}
+    </div>
+  )}
+</div>
+
           <button onClick={() => setShowAdmin(true)} style={{ background: 'none', border: '1px solid rgba(255,255,255,.3)', borderRadius: 3, padding: '6px 10px', color: 'white', cursor: 'pointer', fontSize: 13 }}>⚙️</button>
           <button onClick={onLogout} style={{ background: 'none', border: '1px solid rgba(255,255,255,.3)', borderRadius: 3, padding: '6px 10px', color: 'rgba(255,255,255,.7)', cursor: 'pointer', fontSize: 13 }}>⏏️</button>
         </div>
