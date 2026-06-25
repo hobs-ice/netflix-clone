@@ -93,8 +93,10 @@ setFavoris(favorisData || []);
     setSeries(seriesData || []);
   };
 
-  useEffect(() => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+useEffect(() => {
     loadFilms();
+
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('premium') === 'success') {
       window.history.replaceState({}, '', window.location.pathname);

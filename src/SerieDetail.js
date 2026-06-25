@@ -6,7 +6,8 @@ export default function SerieDetail({ serie, onBack }) {
   const [currentEpisode, setCurrentEpisode] = useState(null);
   const [saison, setSaison] = useState(1);
 
-  useEffect(() => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+useEffect(() => {
     loadEpisodes();
   }, []);
 
