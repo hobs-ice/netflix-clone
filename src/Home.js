@@ -93,15 +93,15 @@ setFavoris(favorisData || []);
     setSeries(seriesData || []);
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    loadFilms();
-const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('premium') === 'success') {
-      window.history.replaceState({}, '', window.location.pathname);
-      alert('🎉 Bienvenue Premium !');
-    }
-  }, []);
+  loadFilms();
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('premium') === 'success') {
+    window.history.replaceState({}, '', window.location.pathname);
+    alert('🎉 Bienvenue Premium !');
+  }
+}, []); // eslint-disable-line
+
 
   if (showAdmin) return <Admin onBack={() => setShowAdmin(false)} films={films} onRefresh={loadFilms} />;
   if (showSubscription) return <Subscription session={session} onBack={() => setShowSubscription(false)} />;

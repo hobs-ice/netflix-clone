@@ -6,20 +6,21 @@ export default function SerieDetail({ serie, onBack }) {
   const [currentEpisode, setCurrentEpisode] = useState(null);
   const [saison, setSaison] = useState(1);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-useEffect(() => {
-    loadEpisodes();
-  }, []);
-
   const loadEpisodes = async () => {
-    const { data } = await supabase
-      .from('episodes')
-      .select('*')
-      .eq('serie_id', serie.id)
-      .order('saison', { ascending: true })
-      .order('numero', { ascending: true });
-    setEpisodes(data || []);
-  };
+  const { data } = await supabase
+    .from('episodes')
+    .select('*')
+    .eq('serie_id', serie.id)
+    .order('saison', { ascending: true })
+    .order('numero', { ascending: true });
+  setEpisodes(data || []);
+};
+
+// eslint-disable-next-line react-hooks/exhaustive-deps
+useEffect(() => {
+  loadEpisodes();
+}, []);
+
 
   const saisons = [...new Set(episodes.map(e => e.saison))];
 
