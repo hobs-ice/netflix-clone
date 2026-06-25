@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { supabase } from './supabase';
 
-export default function Admin({ onBack }) {
+export default function Admin({ onBack, films = [], onRefresh }) {
+  const [editFilm, setEditFilm] = useState(null);
   const [titre, setTitre] = useState('');
   const [description, setDescription] = useState('');
   const [genre, setGenre] = useState('');
@@ -18,25 +19,29 @@ export default function Admin({ onBack }) {
       return;
     }
     setSaving(true);
-    const { error } = await supabase.from('films').insert({
-      titre,
-      description,
-      genre,
+    
+    const filmData = {
+      titre, description, genre,
       annee: annee ? parseInt(annee) : null,
       duree: duree ? parseInt(duree) : null,
       video_url: videoUrl,
       thumbnail_url: thumbnailUrl,
-    });
+    };
+
+    let error;
+    if (editFilm) {
+      ({ error } = await supabase.from('films').update(filmData).eq('id', editFilm.id));
+    } else {
+      ({ error } = await supabase.from('films').insert(filmData));
+    }
+
     if (error) setMessage('❌ Erreur: ' + error.message);
     else {
-      setMessage('✅ Film ajouté !');
-      setTitre('');
-      setDescription('');
-      setGenre('');
-      setAnnee('');
-      setDuree('');
-      setVideoUrl('');
-      setThumbnailUrl('');
+      setMessage(editFilm ? '✅ Film modifié !' : '✅ Film ajouté !');
+      setEditFilm(null);
+      setTitre(''); setDescription(''); setGenre('');
+      setAnnee(''); setDuree(''); setVideoUrl(''); setThumbnailUrl('');
+      onRefresh();
     }
     setSaving(false);
   };
@@ -79,9 +84,44 @@ export default function Admin({ onBack }) {
           </div>
         )}
 
+{/* LISTE DES FILMS */}
+<div style={{ marginTop: 32 }}>
+  <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>📋 Films existants</div>
+  {films.map(film => (
+    <div key={film.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#222', borderRadius: 4, padding: '12px 16px', marginBottom: 8 }}>
+      <div>
+        <div style={{ fontWeight: 600 }}>{film.titre}</div>
+        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>{film.genre} · {film.annee}</div>
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button onClick={() => {
+          setTitre(film.titre);
+          setDescription(film.description || '');
+          setGenre(film.genre || '');
+          setAnnee(film.annee?.toString() || '');
+          setDuree(film.duree?.toString() || '');
+          setVideoUrl(film.video_url || '');
+          setThumbnailUrl(film.thumbnail_url || '');
+          setEditFilm(film);
+        }} style={{ background: '#333', border: 'none', borderRadius: 4, padding: '6px 12px', color: 'white', cursor: 'pointer', fontSize: 12 }}>
+          ✏️ Modifier
+        </button>
+        <button onClick={async () => {
+          if (window.confirm('Supprimer ce film ?')) {
+            await supabase.from('films').delete().eq('id', film.id);
+            onRefresh();
+          }
+        }} style={{ background: 'rgba(229,9,20,0.3)', border: 'none', borderRadius: 4, padding: '6px 12px', color: '#E50914', cursor: 'pointer', fontSize: 12 }}>
+          🗑️
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
+
         <button onClick={saveFilm} disabled={saving}
           style={{ width: '100%', padding: '14px', borderRadius: 4, border: 'none', background: '#E50914', color: 'white', fontWeight: 700, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
-          {saving ? '⏳ Enregistrement...' : '✅ Ajouter le film'}
+          {saving ? '⏳ Enregistrement...' : editFilm ? '✅ Modifier le film' : '✅ Ajouter le film'}
         </button>
       </div>
     </div>
