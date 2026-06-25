@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabase';
 import Admin from './Admin';
+import Subscription from './Subscription';
+
 
 function FilmCard({ film, onClick }) {
   return (
@@ -23,23 +25,34 @@ function FilmCard({ film, onClick }) {
   );
 }
 
-export default function Home({ session, onLogout }) {
+export default function Home({ session, onLogout, profile }) {
+
   const [films, setFilms] = useState([]);
   const [currentFilm, setCurrentFilm] = useState(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [search, setSearch] = useState('');
+  const [showSubscription, setShowSubscription] = useState(false);
 
 
 
-  useEffect(() => {
-    loadFilms();
-  }, []);
 
-  const loadFilms = async () => {
-    const { data } = await supabase.from('films').select('*').order('created_at', { ascending: false });
-    setFilms(data || []);
-  };
+ const loadFilms = async () => {
+  const { data } = await supabase.from('films').select('*').order('created_at', { ascending: false });
+  setFilms(data || []);
+};
+
+useEffect(() => {
+  loadFilms();
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('premium') === 'success') {
+    window.history.replaceState({}, '', window.location.pathname);
+    alert('🎉 Bienvenue Premium !');
+  }
+}, []);
+
+
 if (showAdmin) return <Admin onBack={() => setShowAdmin(false)} films={films} onRefresh={loadFilms} />;
+if (showSubscription) return <Subscription session={session} onBack={() => setShowSubscription(false)} />;
 
   return (
     
@@ -54,6 +67,11 @@ if (showAdmin) return <Admin onBack={() => setShowAdmin(false)} films={films} on
   placeholder="🔍 Rechercher..."
   style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 4, padding: '8px 16px', color: 'white', fontSize: 14, outline: 'none', width: 250 }}
 />
+{!profile?.is_premium && (
+  <button onClick={() => setShowSubscription(true)} style={{ background: '#E50914', border: 'none', borderRadius: 4, padding: '6px 14px', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+    💎 S'abonner
+  </button>
+)}
 
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{session?.user?.email}</span>

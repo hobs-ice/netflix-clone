@@ -36,7 +36,8 @@ function App() {
 
   if (!session) return <Auth />;
 
-  return <Home session={session} onLogout={() => supabase.auth.signOut()} />;
+  return <Home session={session} onLogout={() => supabase.auth.signOut()} profile={profile} />;
+
 }
 
 export default App;
