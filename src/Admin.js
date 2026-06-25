@@ -1,5 +1,7 @@
-import { useState } from 'react';
+
 import { supabase } from './supabase';
+import { useState, useEffect } from 'react';
+
 
 export default function Admin({ onBack, films = [], onRefresh }) {
   const [editFilm, setEditFilm] = useState(null);
@@ -12,39 +14,52 @@ export default function Admin({ onBack, films = [], onRefresh }) {
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [mode, setMode] = useState('film'); // 'film' ou 'serie'
+const [serieId, setSerieId] = useState('');
+const [saison, setSaison] = useState('1');
+const [numero, setNumero] = useState('1');
+const [series, setSeries] = useState([]);
 
-  const saveFilm = async () => {
-    if (!titre || !videoUrl) {
-      setMessage('❌ Titre et URL vidéo sont obligatoires');
-      return;
-    }
-    setSaving(true);
-    
-    const filmData = {
-      titre, description, genre,
-      annee: annee ? parseInt(annee) : null,
-      duree: duree ? parseInt(duree) : null,
-      video_url: videoUrl,
-      thumbnail_url: thumbnailUrl,
-    };
+useEffect(() => {
+  loadSeries();
+}, []);
 
-    let error;
+const loadSeries = async () => {
+  const { data } = await supabase.from('series').select('*');
+  setSeries(data || []);
+};
+
+ const saveFilm = async () => {
+  setSaving(true);
+  let error;
+
+  if (mode === 'film') {
+    if (!titre || !videoUrl) { setMessage('❌ Titre et URL vidéo obligatoires'); setSaving(false); return; }
+    const filmData = { titre, description, genre, annee: annee ? parseInt(annee) : null, duree: duree ? parseInt(duree) : null, video_url: videoUrl, thumbnail_url: thumbnailUrl };
     if (editFilm) {
       ({ error } = await supabase.from('films').update(filmData).eq('id', editFilm.id));
     } else {
       ({ error } = await supabase.from('films').insert(filmData));
     }
+  } else if (mode === 'serie') {
+    if (!titre) { setMessage('❌ Titre obligatoire'); setSaving(false); return; }
+    ({ error } = await supabase.from('series').insert({ titre, description, genre, annee: annee ? parseInt(annee) : null, thumbnail_url: thumbnailUrl }));
+  } else if (mode === 'episode') {
+    if (!titre || !videoUrl || !serieId) { setMessage('❌ Titre, série et URL vidéo obligatoires'); setSaving(false); return; }
+    ({ error } = await supabase.from('episodes').insert({ titre, description, video_url: videoUrl, thumbnail_url: thumbnailUrl, saison: parseInt(saison), numero: parseInt(numero), duree: duree ? parseInt(duree) : null, serie_id: serieId }));
+  }
 
-    if (error) setMessage('❌ Erreur: ' + error.message);
-    else {
-      setMessage(editFilm ? '✅ Film modifié !' : '✅ Film ajouté !');
-      setEditFilm(null);
-      setTitre(''); setDescription(''); setGenre('');
-      setAnnee(''); setDuree(''); setVideoUrl(''); setThumbnailUrl('');
-      onRefresh();
-    }
-    setSaving(false);
-  };
+  if (error) setMessage('❌ Erreur: ' + error.message);
+  else {
+    setMessage('✅ Enregistré !');
+    setTitre(''); setDescription(''); setGenre(''); setAnnee(''); setDuree(''); setVideoUrl(''); setThumbnailUrl('');
+    setSerieId(''); setSaison('1'); setNumero('1');
+    onRefresh();
+    loadSeries();
+  }
+  setSaving(false);
+};
+
 
   const inputStyle = {
     width: '100%',
@@ -65,6 +80,15 @@ export default function Admin({ onBack, films = [], onRefresh }) {
         ← Retour
       </button>
       <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 24, color: '#E50914' }}>🎬 Ajouter un film</div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+  {['film', 'serie', 'episode'].map(m => (
+    <button key={m} onClick={() => setMode(m)}
+      style={{ background: mode === m ? '#E50914' : '#333', border: 'none', borderRadius: 4, padding: '8px 16px', color: 'white', cursor: 'pointer', fontWeight: mode === m ? 700 : 400, fontSize: 14 }}>
+      {m === 'film' ? '🎬 Film' : m === 'serie' ? '📺 Série' : '▶ Épisode'}
+    </button>
+  ))}
+</div>
+
 
       <div style={{ maxWidth: 600 }}>
         <input style={inputStyle} placeholder="Titre *" value={titre} onChange={e => setTitre(e.target.value)} />
